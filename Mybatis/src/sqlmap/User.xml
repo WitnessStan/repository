@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 写sql语句 -->
+<mapper namespace="com.mybatis.mapper.UserMapper">
+	<select id="findUserById" parameterType="Integer" resultType="User">
+		select * from user where id = #{id}
+	</select>
+	<select id="findUserByName" parameterType="String" resultType="User">
+		<!--#{}是占位符，就是jdbc preparestatement中的那些问号，可防止sql注入 ;  ${}表示字符串拼接-->
+		
+		<!--第一种在传值的时候例如查询名字含有王的人 要传入 %王% -->
+		<!--select * from user where username like #{username}   -->
+		
+		<!-- 第二种只需要传入 王 ，但是不能防止sql注入，相当于拼接字符串 -->
+		<!--select * from user where username like '%${value}%'如果传入的参数是简单数据类型，${}里面必须写value--> 
+		
+		<!--第三种集成一二两者的优势，只需输传入 王，并且防止sql注入-->
+		select * from user where username like "%"#{username}"%" 
+	</select>
+	<insert id="saveUser" parameterType="User">
+		<selectKey keyProperty="id" resultType="Integer" order="AFTER">
+			<!-- LAST_INSERT_ID():是mysql的函数，返回auto_increment自增列新记录id值。,返回到pojo的id属性-->
+			<!-- 如果用的是uuid则order要设置为BEFORE -->
+			select LAST_INSERT_ID()
+		</selectKey>
+		<!-- values属性跟pojo中名称一一对应即可 -->
+		insert into user (username,birthday,sex,address) 
+		values(#{username},#{birthday},#{sex},#{address})
+	</insert>
+	<update id="updateUserById" parameterType="User">
+		update user set username = #{username},sex = #{sex},address = #{address},
+		birthday = #{birthday} where id = #{id}
+	</update>
+	<delete id="deleteUserById" parameterType="Integer">
+		delete from user where id = #{id}
+	</delete>
+		
+</mapper>
